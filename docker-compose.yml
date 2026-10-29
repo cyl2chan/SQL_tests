@@ -1,0 +1,69 @@
+# ============================================================
+#  docker-compose.yml — SQL Testing Demo
+# ============================================================
+#  Same 3-container architecture as last session.
+#  NEW: test-runner now connects to BOTH the API and the DB directly.
+#
+#  ┌─────────────┐     ┌─────────────┐     ┌──────────────┐
+#  │     db      │     │     api     │     │  test-runner  │
+#  │  PostgreSQL │◄────│  Flask API  │◄────│    pytest     │
+#  │  Port 5432  │     │  Port 5000  │     │              │
+#  └──────┬──────┘     └─────────────┘     └──────┬───────┘
+#         │                                        │
+#         └────────────────────────────────────────┘
+#             test-runner also connects directly to DB
+#             (this is the NEW part for database testing)
+#
+#  Run: docker compose up --build --abort-on-container-exit
+# ============================================================
+
+services:
+
+  # ── Container 1: The Database ────────────────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d testdb"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  # ── Container 2: The Mock API Server ─────────────────────
+  api:
+    build: ./app
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: testdb
+      DB_USER: testuser
+      DB_PASSWORD: testpass
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Container 3: The Test Runner ─────────────────────────
+  # NEW: test-runner now has DB credentials so it can connect
+  # directly to PostgreSQL for database-level validation.
+  test-runner:
+    build: ./tests
+    environment:
+      # API connection (same as before)
+      API_URL: http://api:5000
+      # DB connection (NEW — for database testing)
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: testdb
+      DB_USER: testuser
+      DB_PASSWORD: testpass
+    volumes:
+      - ./reports:/tests/reports
+    depends_on:
+      - api
