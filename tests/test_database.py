@@ -212,6 +212,39 @@ class TestAPIWithDBValidation:
             f"API price {api_price} doesn't match DB price {db_price}"
 
 
+    # Homework 14. (a) Verify that after creating 2 products via API, the DB count increased by exactly 2.
+    def test_create_2_products_DB_count_increase_2(self, db_cursor):
+        """
+        POST 2 products to API → then SELECT from DB to verify count increased by 2.
+        The API could return 201 but fail to write — this catches that.
+        """
+        # Step 1: Check count in DB
+        db_cursor.execute("SELECT COUNT(*) FROM products")
+        db_count_before = db_cursor.fetchone()[0]
+
+        # Step 2: Create 2 products via API
+        payload = {"name": "DB Added Widget 1", "price": 39.99, "in_stock": True}
+        response = requests.post(f"{BASE_URL}/api/products", json=payload)
+        assert response.status_code == 201
+        product1_id = response.json()["id"]
+
+        payload = {"name": "DB Added Widget 2", "price": 99.99, "in_stock": True}
+        response = requests.post(f"{BASE_URL}/api/products", json=payload)
+        assert response.status_code == 201
+        product2_id = response.json()["id"]
+
+        # Step 3: Check count in DB, verify count in DB increased by 2
+        db_cursor.execute("SELECT COUNT(*) FROM products")
+        db_count_after = db_cursor.fetchone()[0]
+
+        assert db_count_after - db_count_before == 2
+
+        # Cleanup: delete via API
+        requests.delete(f"{BASE_URL}/api/products/{product1_id}")
+        requests.delete(f"{BASE_URL}/api/products/{product2_id}")
+
+
+
 # ═══════════════════════════════════════════════════════════
 #  PART 3: Data Integrity Tests
 # ═══════════════════════════════════════════════════════════
