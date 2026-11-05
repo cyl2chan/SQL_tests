@@ -271,8 +271,27 @@ class TestAPIWithDBValidation:
         db_original_price = db_cursor.fetchone()[0]
         assert db_original_price == Decimal(str(api_original_price)) == Decimal(str(29.99)), \
             f"db_original_price: {db_original_price}; api_original_price: {api_original_price}"
-        
 
+
+    # Homework 14. (c) Verify that the 'in_stock' field in the DB matches what the API returns for each product.
+    def test_in_stock_field_in_DB_matches_API_return(self, db_cursor):
+        # Step 1: Get from API
+        api_response = requests.get(f"{BASE_URL}/api/products")
+        assert api_response.status_code == 200, api_response.text
+
+        #in_stocks = [api_in_stock["in_stock"] for api_in_stock in api_in_stocks] # [True, True, True, False,
+        api_in_stock = sorted(
+            (product["id"], product["in_stock"])
+            for product in api_response.json()
+        )
+
+        # Step 2: Get from DB
+        db_cursor.execute("SELECT id, in_stock FROM products ORDER by id")
+        db_in_stock = db_cursor.fetchall()
+
+        assert api_in_stock == db_in_stock, f"api_in_stock: {api_in_stock}, db_in_stock: {db_in_stock}"
+
+    
 # ═══════════════════════════════════════════════════════════
 #  PART 3: Data Integrity Tests
 # ═══════════════════════════════════════════════════════════
