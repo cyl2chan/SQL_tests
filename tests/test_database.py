@@ -243,7 +243,35 @@ class TestAPIWithDBValidation:
         requests.delete(f"{BASE_URL}/api/products/{product1_id}")
         requests.delete(f"{BASE_URL}/api/products/{product2_id}")
 
+    # Homework 14. (b) Verify that updating a product's price via a new PUT endpoint is reflected in the DB.
+    def test_update_product_price_PUT_reflected_in_DB(self, db_cursor):
+        # Step 1: update product's price via PUT
+        product_id = 1
+        payload = {"name": "Sauce Labs Backpack", "price":99.99}
+        response_PUT = requests.put(f"{BASE_URL}/api/products/{product_id}", json=payload)
+        api_price = response_PUT.json()["price"]    # Decimal
+        assert response_PUT.status_code == 200, \
+            f"response body: {response_PUT.text}; response header: {response_PUT.headers}"
 
+        # Step 2: verify it's reflected in DB
+        db_cursor.execute("SELECT price FROM products WHERE id = 1")
+        db_price = db_cursor.fetchone()[0]  # float
+        print("db_price:", db_price, "api_price:", api_price)
+        assert db_price == Decimal(str(api_price))
+
+        # Step 3: restore price back to original $29.99
+        product_id = 1
+        payload = {"product_id": 1, "name": "Sauce Labs Backpack", "price":29.99}
+        response_PUT = requests.put(f"{BASE_URL}/api/products/{product_id}", json=payload)
+        api_original_price = response_PUT.json()["price"]
+        assert response_PUT.status_code == 200, \
+            f"response body: {response_PUT.text}; response header: {response_PUT.headers}"
+        
+        db_cursor.execute("SELECT price FROM products WHERE id = 1")
+        db_original_price = db_cursor.fetchone()[0]
+        assert db_original_price == Decimal(str(api_original_price)) == Decimal(str(29.99)), \
+            f"db_original_price: {db_original_price}; api_original_price: {api_original_price}"
+        
 
 # ═══════════════════════════════════════════════════════════
 #  PART 3: Data Integrity Tests

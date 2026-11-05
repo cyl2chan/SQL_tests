@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["pytest", "-v", "--tb=short", "--html=/tests/reports/report.html", "--self-contained-html"]
+CMD ["pytest", "-v", "--tb=short", "--html=/tests/reports/report.html", "--self-contained-html", "-s"]

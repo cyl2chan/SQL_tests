@@ -140,6 +140,27 @@ def delete_product(product_id):
     return jsonify({"message": f"Product {product_id} deleted"}), 200
 
 
+@app.route("/api/products/<int:product_id>", methods=["PUT"])
+def put_product(product_id):
+    """PUT a product by ID."""
+    data = request.get_json()
+    db_price = data["price"]
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("UPDATE products SET price = %s WHERE id = %s RETURNING id, price", (db_price, product_id))
+    putted = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    if putted is None:
+        return jsonify({"error": "Product not found"}), 404
+    return jsonify({
+        "id": putted[1], 
+        "price": float(putted[1]), 
+        "mesaage": f"Product {product_id} updated (PUT)"}
+        ), 200 
+
+
 # ─── Startup ─────────────────────────────────────────────
 
 if __name__ == "__main__":
