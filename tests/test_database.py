@@ -411,64 +411,41 @@ class TestSQLWriteOperations:
 # actually exists in the products table
 # ═══════════════════════════════════════════════════════════
 
-# class TestSameColumnOrdersProducts:
-#     def test_product_referenced_in_order_exists_in_products(self, db_cursor, db_connection):
-#         """
-#         SELECT * FROM orders
-#         LEFT JOIN products
-#             on orders.product_id = products.id
-#         ORDER BY order_id
+class TestSameColumnOrdersProducts:
+    def test_product_referenced_in_order_exists_in_products(self, db_cursor, db_connection):
+        """
+        SELECT * FROM orders
+        LEFT JOIN products
+            on orders.product_id = products.id
+        ORDER BY order_id
 
-#         ensure JOIN works on orders.product_id
-#         """
-#         db_cursor.execute("""
-#             SELECT * FROM orders
-#             LEFT JOIN products
-#                 on orders.product_id = products.id
-#             WHERE order_id = %s
-#         """, (1))
-#         rows = db_cursor.fetchall()
+        ensure JOIN works on orders.product_id
+        """
+        db_cursor.execute("""
+            SELECT order_id, product_id, customer_name, country, repeated_customer, name, price, in_stock FROM orders
+            LEFT JOIN products
+                on orders.product_id = products.id
+            WHERE order_id = %s
+        """, (1,))
+        rows = db_cursor.fetchall()
 
-#         # order_id, product_id, customer_name, country, repeated_customer, name, price, in_stock
-#         order_id = [row[0] for row in rows]
-#         product_id = [row[1] for row in rows]
-#         customer_name = [row[2] for row in rows]
-#         country = [row[3] for row in rows]
-#         repeated_customer = [row[4] for row in rows]
-#         name = [row[5] for row in rows]
-#         price = [row[6] for row in rows]
-#         in_stock = [row[7] for row in rows]
-#         # assert: data of Messi
-#         assert order_id == 1
-#         assert product_id == 1
-#         assert customer_name == 'Lionel Messi'
-#         assert country == 'Argentina'
-#         assert repeated_customer == 'TRUE'
-#         assert name == 'Sauce Labs Backpack'
-#         assert price == 29.99
-#         assert in_stock == 'TRUE'
+        order_id = [row[0] for row in rows]
+        product_id = [row[1] for row in rows]
+        customer_name = [row[2] for row in rows]
+        country = [row[3] for row in rows]
+        repeated_customer = [row[4] for row in rows]
+        name = [row[5] for row in rows]
+        price = [row[6] for row in rows]
+        in_stock = [row[7] for row in rows]
+        
+        assert 1 in order_id
+        assert 1 in product_id
+        assert "Lionel Messi" in customer_name
+        assert "Argentina" in country
+        assert True in repeated_customer
+        assert "Sauce Labs Backpack" in name
+        assert Decimal("29.99")in price     
+        assert True in in_stock     
 
-        # db_cursor.execute("SELECT name, price FROM products ORDER BY price ASC")
-        # rows = db_cursor.fetchall()
 
-        # prices = [row[1] for row in rows]
-        # assert prices == sorted(prices)   # Verify ascending order
-
-        # if cur.fetchone()[0] == 0:
-        #     cur.execute("""
-        #         INSERT INTO orders (product_id, customer_name, country, repeated_customer) values
-        #         (1, 'Lionel Messi', 'Argentina', TRUE)
-        #         (3, 'John Cena', 'USA', TRUE)
-        #         (3, 'Leon Chan', 'Canada', False)
-        #         (2, 'Kobe Bryan', 'USA', False)
-        #     """)
-
-        # if cur.fetchone()[0] == 0:
-        #     cur.execute("""
-        #         INSERT INTO products (name, price, in_stock) VALUES
-        #         ('Sauce Labs Backpack', 29.99, TRUE),
-        #         ('Sauce Labs Bike Light', 9.99, TRUE),
-        #         ('Sauce Labs Bolt T-Shirt', 15.99, TRUE),
-        #         ('Sauce Labs Fleece Jacket', 49.99, FALSE)
-        #     """)
         
