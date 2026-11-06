@@ -71,7 +71,7 @@ def init_orders_db():
     cur.execute("""
         CREATE TABLE IF NOT EXISTS orders (
         order_id SERIAL PRIMARY KEY,
-        product_id INTEGER, NOT NULL REFERENCES products(id)
+        product_id INTEGER NOT NULL REFERENCES products(id),
         customer_name VARCHAR(50) NOT NULL,
         country VARCHAR(30) NOT NULL,
         repeated_customer BOOLEAN DEFAULT FALSE
@@ -82,9 +82,9 @@ def init_orders_db():
     if cur.fetchone()[0] == 0:
         cur.execute("""
             INSERT INTO orders (product_id, customer_name, country, repeated_customer) values
-            (1, 'Lionel Messi', 'Argentina', TRUE)
-            (3, 'John Cena', 'USA', TRUE)
-            (3, 'Leon Chan', 'Canada', False)
+            (1, 'Lionel Messi', 'Argentina', TRUE),
+            (3, 'John Cena', 'USA', TRUE),
+            (3, 'Leon Chan', 'Canada', False),
             (2, 'Kobe Bryan', 'USA', False)
         """)
     conn.commit()
