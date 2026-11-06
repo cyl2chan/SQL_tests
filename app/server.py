@@ -63,6 +63,35 @@ def init_db():
     conn.close()
 
 
+# Homework Bonus 16. Add a second table (e.g., 'orders')
+def init_orders_db():
+    """Create table and seed data"""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS orders (
+        order_id SERIAL PRIMARY KEY,
+        product_id NUMERIC(5, 0), NOT NULL
+        customer_name VARCHAR(50) NOT NULL,
+        country VARCHAR(30) NOT NULL,
+        repeated_customer BOOLEAN FALSE
+        )
+    """)
+    # Seed data - only if table is empty
+    cur.execute("SELECT COUNT(*) FROM orders")
+    if cur.fetchone()[0] == 0:
+        cur.execute("""
+            INSERT INTO orders (product_id, customer_name, country, repeated_customer) values
+            (1, Lionel Messi, Argentina, TRUE)
+            (3, John Cena, USA, TRUE)
+            (3, Leon Chan, Canada, False)
+            (2, Kobe Bryan, USA, False)
+        """)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 # ─── Routes ──────────────────────────────────────────────
 
 @app.route("/health", methods=["GET"])
@@ -166,4 +195,5 @@ def put_product(product_id):
 if __name__ == "__main__":
     wait_for_db()
     init_db()
+    init_orders_db()
     app.run(host="0.0.0.0", port=5000)
