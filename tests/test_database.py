@@ -402,3 +402,14 @@ class TestSQLWriteOperations:
         # Verify gone
         db_cursor.execute("SELECT * FROM products WHERE id = %s", (product_id,))
         assert db_cursor.fetchone() is None
+
+
+# Homework 16. Bonus: Write a test that validates a product referenced in an order in table Orders
+# actually exists in the products table.
+# ═══════════════════════════════════════════════════════════
+#  PART 5: validates a product referenced in an order in table Orders
+# actually exists in the products table
+# ═══════════════════════════════════════════════════════════
+
+class TestSameColumnOrdersProducts:
+    def test_product_referenced_in_order_exists_in_products(self, db_cursor, db_connection):
