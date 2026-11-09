@@ -249,13 +249,13 @@ class TestAPIWithDBValidation:
         product_id = 1
         payload = {"name": "Sauce Labs Backpack", "price":99.99}
         response_PUT = requests.put(f"{BASE_URL}/api/products/{product_id}", json=payload)
-        api_price = response_PUT.json()["price"]    # Decimal
+        api_price = response_PUT.json()["price"]    # float
         assert response_PUT.status_code == 200, \
             f"response body: {response_PUT.text}; response header: {response_PUT.headers}"
 
         # Step 2: verify it's reflected in DB
         db_cursor.execute("SELECT price FROM products WHERE id = 1")
-        db_price = db_cursor.fetchone()[0]  # float
+        db_price = db_cursor.fetchone()[0]  # Decimal
         print("db_price:", db_price, "api_price:", api_price)
         assert db_price == Decimal(str(api_price))
 
